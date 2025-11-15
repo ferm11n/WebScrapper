@@ -1,0 +1,9 @@
+# VSCode settings
+.vscode/
+
+# Maven build output
+target/
+
+# Archivos temporales de sistema
+*.log
+*.tmp
