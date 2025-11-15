@@ -1,9 +1,61 @@
-# VSCode settings
+# ===========================
+# IDEs
+# ===========================
+
+# VSCode
 .vscode/
 
-# Maven build output
-target/
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
 
-# Archivos temporales de sistema
+# Eclipse
+*.classpath
+*.project
+*.settings/
+
+# ===========================
+# Compiled class files
+# ===========================
+*.class
+
+# ===========================
+# Build output
+# ===========================
+target/
+out/
+
+# ===========================
+# Logs and temporary files
+# ===========================
 *.log
 *.tmp
+*.bak
+*.swp
+
+# ===========================
+# Operating system files
+# ===========================
+# Mac
+.DS_Store
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ===========================
+# Maven
+# ===========================
+# Local repository of downloaded artifacts
+/repository/
+# Maven wrapper files
+.mvn/wrapper/maven-wrapper.jar
+
+# ===========================
+# Other
+# ===========================
+*.jar
+*.war
+*.ear
