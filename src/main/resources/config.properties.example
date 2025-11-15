@@ -1,5 +1,5 @@
 #url desde donde se van a extraer los productos
-target.url=
+category.(nombreClaveDeCategoria)=(url)
 
 
 #Anti-bot, paginacion, delays.
