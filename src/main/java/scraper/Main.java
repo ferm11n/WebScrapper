@@ -22,7 +22,6 @@ public class Main {
         WebDriver driver = DriverFactory.create();
         ScraperService scraper = new ScraperService();
         ProductRepository repo = new ProductRepository();
-
         Map<String, String> categorias = AppConfig.getCategorias();
 
         try {
@@ -30,25 +29,23 @@ public class Main {
                 String nombreCategoria = entry.getKey();
                 String urlCategoria = entry.getValue();
 
-                log.info("Iniciando scraping de categoría: {} -> {}", nombreCategoria, urlCategoria);
+                log.info("Scraping de categoría: {} -> {}", nombreCategoria, urlCategoria);
 
-                // Ahora scrapeAllPages maneja todas las páginas de la categoría
+                // Scrapeamos todas las páginas de la categoría
                 List<Product> products = scraper.scrapeAllPages(driver, urlCategoria, nombreCategoria);
 
-                // Guardamos todos los productos en la base de datos
+                // Guardamos en la base de datos
                 for (Product p : products) {
                     repo.save(p);
                 }
 
-                log.info("Scraping finalizado para categoría {}. Total productos guardados: {}", 
-                        nombreCategoria, products.size());
+                log.info("Total productos guardados para {}: {}", nombreCategoria, products.size());
             }
 
             log.info("Scraping finalizado para todas las categorías.");
 
         } catch (Exception e) {
             log.error("Error en la ejecución: {}", e.getMessage(), e);
-
         } finally {
             log.info("Cerrando driver...");
             driver.quit();

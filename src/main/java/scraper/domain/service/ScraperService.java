@@ -2,7 +2,10 @@ package scraper.domain.service;
 
 import scraper.domain.model.Product;
 import scraper.domain.parser.HtmlParser;
-import org.openqa.selenium.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -18,62 +21,56 @@ public class ScraperService {
     private final HtmlParser parser = new HtmlParser();
 
     /**
-     * Scrapea todos los productos de una categoría, recorriendo todas sus páginas.
-     *
-     * @param driver WebDriver inicializado
-     * @param urlCategoria URL inicial de la categoría
-     * @param categoria Nombre de la categoría
-     * @return Lista de productos de todas las páginas
+     * Scrapea todos los productos de todas las páginas de la categoría
      */
-    public List<Product> scrapeAllPages(WebDriver driver, String urlCategoria, String categoria) {
-
-        driver.get(urlCategoria);
+    public List<Product> scrapeAllPages(WebDriver driver, String url, String categoria) {
         List<Product> allProducts = new ArrayList<>();
+        driver.get(url);
+
         boolean haySiguiente = true;
+        int paginaActual = 1;
 
         while (haySiguiente) {
+            log.info("Scrapeando página {} de categoría {}", paginaActual, categoria);
 
-            log.info("Scrapeando página: {}", driver.getCurrentUrl());
-
-            // 1. Scrapeamos los productos visibles
+            // Scrapeamos productos de la página actual
             List<WebElement> elements = driver.findElements(By.cssSelector(".producto-card"));
+            log.info("{} productos encontrados en la página actual", elements.size());
+
             for (WebElement el : elements) {
                 try {
-                    Product p = parser.parseProduct(el, categoria);
-                    allProducts.add(p);
+                    allProducts.add(parser.parseProduct(el, categoria));
                 } catch (Exception e) {
-                    log.warn("Error parseando producto: {}", e.getMessage());
+                    log.error("Error parseando un producto: {}", e.getMessage());
                 }
             }
 
-            log.info("Productos encontrados hasta ahora en la categoría {}: {}", categoria, allProducts.size());
-
-            // 2. Revisamos si hay botón "Siguiente"
-            List<WebElement> paginas = driver.findElements(By.cssSelector("ul.pagination li a.page-link"));
+            // Detectar botón "Siguiente"
             haySiguiente = false;
+            List<WebElement> paginas = driver.findElements(By.cssSelector("ul.pagination li a.page-link"));
 
             for (WebElement pagina : paginas) {
                 String texto = pagina.getText().trim();
                 if (texto.equals(">") || texto.equals("Siguiente")) {
                     try {
-                        // Hacemos scroll y clic con JS
-                        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", pagina);
+                        String primerProductoAntes = elements.isEmpty() ? "" :
+                                elements.get(0).findElement(By.cssSelector(".nombre-producto")).getText();
 
-                        // Guardamos un identificador del primer producto actual para esperar al cambio
-                        String primerAntes = elements.isEmpty() ? "" : elements.get(0).getText();
+                        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", pagina);
                         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", pagina);
 
-                        // Esperamos a que se cargue la nueva página
                         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-                        final String primerProductoAntes = primerAntes;
+                        final String primerAntes = primerProductoAntes;
+
                         wait.until((ExpectedCondition<Boolean>) d -> {
                             List<WebElement> elems = d.findElements(By.cssSelector(".producto-card .nombre-producto"));
                             if (elems.isEmpty()) return false;
                             String primerActual = elems.get(0).getText();
-                            return !primerActual.equals(primerProductoAntes);
+                            return !primerActual.equals(primerAntes);
                         });
 
                         haySiguiente = true;
+                        paginaActual++;
                     } catch (Exception e) {
                         log.warn("No se pudo avanzar a la siguiente página: {}", e.getMessage());
                     }
@@ -82,6 +79,7 @@ public class ScraperService {
             }
         }
 
+        log.info("Se completó el scraping de categoría {}. Total productos: {}", categoria, allProducts.size());
         return allProducts;
     }
 }
