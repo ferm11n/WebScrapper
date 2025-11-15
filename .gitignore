@@ -59,3 +59,8 @@ Desktop.ini
 *.jar
 *.war
 *.ear
+
+
+/src/main/resources/config.properties
+/src/main/resources/hibernate.cfg.xml
+

@@ -2,12 +2,16 @@ package scraper;
 
 import scraper.config.AppConfig;
 import scraper.config.DriverFactory;
+import scraper.domain.model.Product;
 import scraper.domain.service.ScraperService;
-import scraper.infraestructure.csv.CsvDataWriter;
+import scraper.infraestructure.repository.ProductRepository;
 
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
 
 public class Main {
 
@@ -15,29 +19,35 @@ public class Main {
 
     public static void main(String[] args) {
 
-        String url = AppConfig.get("target.url");
-        
-        String output = AppConfig.get("output.csv");
-
-        log.info("URL objetivo: {}", url);
-        log.info("Archivo de salida: {}", output);
-
         WebDriver driver = DriverFactory.create();
         ScraperService scraper = new ScraperService();
-        CsvDataWriter writer = new CsvDataWriter();
+        ProductRepository repo = new ProductRepository();
+
+        Map<String, String> categorias = AppConfig.getCategorias();
 
         try {
-            log.info("Iniciando proceso de scraping...");
-            var products = scraper.scrapeProducts(driver, url);
+            for (Map.Entry<String, String> entry : categorias.entrySet()) {
+                String nombreCategoria = entry.getKey();
+                String urlCategoria = entry.getValue();
 
-            writer.write(output, products);
+                log.info("Iniciando scraping de categoría: {} -> {}", nombreCategoria, urlCategoria);
 
-            log.info("Scraping finalizado correctamente.");
-            log.info("Productos exportados a {}", output);
+                // Ahora scrapeAllPages maneja todas las páginas de la categoría
+                List<Product> products = scraper.scrapeAllPages(driver, urlCategoria, nombreCategoria);
+
+                // Guardamos todos los productos en la base de datos
+                for (Product p : products) {
+                    repo.save(p);
+                }
+
+                log.info("Scraping finalizado para categoría {}. Total productos guardados: {}", 
+                        nombreCategoria, products.size());
+            }
+
+            log.info("Scraping finalizado para todas las categorías.");
 
         } catch (Exception e) {
-            log.error("Error en la ejecución: {}", e.getMessage());
-            e.printStackTrace();
+            log.error("Error en la ejecución: {}", e.getMessage(), e);
 
         } finally {
             log.info("Cerrando driver...");

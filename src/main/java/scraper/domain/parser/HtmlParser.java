@@ -6,7 +6,8 @@ import scraper.domain.model.Product;
 
 public class HtmlParser {
 
-    public Product parseProduct(WebElement el) {
+    // Ahora recibimos también la categoría del producto
+    public Product parseProduct(WebElement el, String categoria) {
 
         String title = "";
         String price = "";
@@ -31,6 +32,7 @@ public class HtmlParser {
             url = el.findElement(By.cssSelector("a")).getAttribute("href");
         } catch (Exception ignored) {}
 
-        return new Product(title, price, url);
+        // Usamos el constructor con la categoría
+        return new Product(title, price, url, categoria);
     }
 }

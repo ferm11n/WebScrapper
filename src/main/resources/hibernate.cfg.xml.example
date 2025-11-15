@@ -1,0 +1,7 @@
+<hibernate-configuration>
+    <session-factory>
+        <property name="hibernate.connection.url">jdbc:postgresql://localhost:5432/scraperdb</property>
+        <property name="hibernate.connection.username">usuario</property>
+        <property name="hibernate.connection.password">contraseña</property>
+    </session-factory>
+</hibernate-configuration>

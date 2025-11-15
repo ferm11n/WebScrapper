@@ -2,6 +2,8 @@ package scraper.config;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class AppConfig {
@@ -24,5 +26,17 @@ public class AppConfig {
 
     public static String get(String key) {
         return props.getProperty(key);
+    }
+
+    // Nuevo método para obtener todas las categorías
+    public static Map<String, String> getCategorias() {
+        Map<String, String> categorias = new HashMap<>();
+        for (String key : props.stringPropertyNames()) {
+            if (key.startsWith("category.")) {
+                String nombreCategoria = key.substring("category.".length());
+                categorias.put(nombreCategoria, props.getProperty(key));
+            }
+        }
+        return categorias;
     }
 }

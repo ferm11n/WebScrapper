@@ -1,0 +1,13 @@
+#url desde donde se van a extraer los productos
+target.url=
+
+
+#Anti-bot, paginacion, delays.
+pagination.selector=.pagination-next
+delay.min=800
+delay.max=1500
+user.agent.random=true
+
+#desactivar logging DEBUG del cliente http
+-Dorg.apache.hc.client5.http.wire.level=OFF
+
