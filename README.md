@@ -15,6 +15,7 @@ El objetivo es obtener de forma consistente precios y datos de productos, avanza
 - Jsoup (parseo HTML)
 - SLF4J / Logback (logging)
 - Maven (gestion del proyecto)
+- Selenium (WebDriver para paginas dinamicas)
 
 # Cómo ejecutar
 1. Instalar dependencias:
