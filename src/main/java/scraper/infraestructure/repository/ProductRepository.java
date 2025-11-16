@@ -6,65 +6,90 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ProductRepository {
 
-    // Guardar lista de productos sin duplicados por URL
+    /**
+     * Guarda una lista de productos evitando duplicados por URL.
+     * Optimizado: carga todas las URLs existentes en una sola query.
+     */
     public void saveProducts(List<Product> products) {
-        Transaction transaction = null;
+
+        Transaction tx = null;
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
+
+            tx = session.beginTransaction();
+
+            // Obtener URLs existentes (para evitar una query por producto)
+            Query<Object[]> q = session.createQuery(
+                    "SELECT id, url FROM Product", Object[].class
+            );
+            List<Object[]> rows = q.list();
+
+            Map<String, Integer> existentes = new HashMap<>();
+            for (Object[] row : rows) {
+                existentes.put((String) row[1], (Integer) row[0]);
+            }
 
             for (Product p : products) {
-                // Verificar si ya existe por URL
-                Query<Product> query = session.createQuery(
-                    "FROM Product WHERE url = :url", Product.class);
-                query.setParameter("url", p.getUrl());
-                Product existing = query.uniqueResult();
 
-                if (existing == null) {
+                if (!existentes.containsKey(p.getUrl())) {
+                    // Nuevo producto
                     session.save(p);
                 } else {
-                    //actualizar categoría o precio si cambió
+                    // Ya existe → actualizar
+                    Product existing = session.get(Product.class, existentes.get(p.getUrl()));
+
                     existing.setCategoria(p.getCategoria());
                     existing.setPrice(p.getPrice());
-                    session.update(existing);
+                    existing.setSupermercado(p.getSupermercado());
+
+                    session.merge(existing);
                 }
             }
 
-            transaction.commit();
+            tx.commit();
+
         } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
+            if (tx != null) tx.rollback();
             e.printStackTrace();
         }
     }
 
-    // Guardar producto individual sin duplicados
+    /**
+     * Guardar un producto individual sin duplicados
+     */
     public void save(Product p) {
-        Transaction transaction = null;
+        Transaction tx = null;
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
 
-            Query<Product> query = session.createQuery(
-                "FROM Product WHERE url = :url", Product.class);
-            query.setParameter("url", p.getUrl());
-            Product existing = query.uniqueResult();
+            tx = session.beginTransaction();
+
+            Query<Product> q = session.createQuery(
+                    "FROM Product WHERE url = :url", Product.class
+            );
+            q.setParameter("url", p.getUrl());
+
+            Product existing = q.uniqueResult();
 
             if (existing == null) {
                 session.save(p);
             } else {
-                //actualizar categoría o precio si cambió
                 existing.setCategoria(p.getCategoria());
                 existing.setPrice(p.getPrice());
-                session.update(existing);
+                existing.setSupermercado(p.getSupermercado());
+                session.merge(existing);
             }
 
-            transaction.commit();
+            tx.commit();
+
         } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
+            if (tx != null) tx.rollback();
             e.printStackTrace();
         }
     }

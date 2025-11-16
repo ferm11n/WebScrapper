@@ -4,7 +4,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.tudominio</groupId>
+    <groupId>com.ferm11n</groupId>
     <artifactId>scraper</artifactId>
     <version>1.0.0</version>
 
@@ -26,7 +26,7 @@
         <dependency>
             <groupId>io.github.bonigarcia</groupId>
             <artifactId>webdrivermanager</artifactId>
-            <version>5.8.0</version>
+            <version>5.9.2</version>
         </dependency>
 
         <!-- Logging (SLF4J + Logback) -->

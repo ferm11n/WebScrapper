@@ -3,7 +3,7 @@ package scraper;
 import scraper.config.AppConfig;
 import scraper.config.DriverFactory;
 import scraper.domain.model.Product;
-import scraper.domain.service.ScraperService;
+import scraper.supermarkets.CotoScraper;
 import scraper.infraestructure.repository.ProductRepository;
 
 import org.openqa.selenium.WebDriver;
@@ -20,7 +20,7 @@ public class Main {
     public static void main(String[] args) {
 
         WebDriver driver = DriverFactory.create();
-        ScraperService scraper = new ScraperService();
+        CotoScraper cotoScraper = new CotoScraper();
         ProductRepository repo = new ProductRepository();
         Map<String, String> categorias = AppConfig.getCategorias();
 
@@ -31,10 +31,13 @@ public class Main {
 
                 log.info("Scraping de categoría: {} -> {}", nombreCategoria, urlCategoria);
 
-                // Scrapeamos todas las páginas de la categoría
-                List<Product> products = scraper.scrapeAllPages(driver, urlCategoria, nombreCategoria);
+                List<Product> products = cotoScraper.scrapeAllPages(
+                        driver,
+                        urlCategoria,
+                        nombreCategoria,
+                        "Coto"
+                );
 
-                // Guardamos en la base de datos
                 for (Product p : products) {
                     repo.save(p);
                 }
