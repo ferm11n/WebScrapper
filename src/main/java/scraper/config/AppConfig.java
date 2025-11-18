@@ -39,4 +39,17 @@ public class AppConfig {
         }
         return categorias;
     }
+
+    // Obtener categorías de La Anónima
+    public static Map<String, String> getCategorias(String prefix) {
+        Map<String, String> categorias = new HashMap<>();
+        for (String key : props.stringPropertyNames()) {
+            if (key.startsWith(prefix)) {
+                String nombreCategoria = key.substring(prefix.length());
+                categorias.put(nombreCategoria, props.getProperty(key));
+            }
+        }
+        return categorias;
+    }
+
 }
