@@ -12,10 +12,6 @@ import java.util.Map;
 
 public class ProductRepository {
 
-    /**
-     * Guarda una lista de productos evitando duplicados por URL.
-     * Optimizado: carga todas las URLs existentes en una sola query.
-     */
     public void saveProducts(List<Product> products) {
 
         Transaction tx = null;
@@ -24,13 +20,13 @@ public class ProductRepository {
 
             tx = session.beginTransaction();
 
-            // Obtener URLs existentes (para evitar una query por producto)
+            // Obtener URLs existentes
             Query<Object[]> q = session.createQuery(
                     "SELECT id, url FROM Product", Object[].class
             );
+
             List<Object[]> rows = q.list();
 
-            // Cambiado a Long porque Product.id es Long
             Map<String, Long> existentes = new HashMap<>();
             for (Object[] row : rows) {
                 Long id = (Long) row[0];
@@ -42,9 +38,8 @@ public class ProductRepository {
 
                 if (!existentes.containsKey(p.getUrl())) {
                     // Nuevo producto
-                    session.save(p);
+                    session.persist(p); // ← CAMBIO CRÍTICO
                 } else {
-                    // Ya existe → actualizar
                     Long existingId = existentes.get(p.getUrl());
                     Product existing = session.get(Product.class, existingId);
 
@@ -65,9 +60,6 @@ public class ProductRepository {
         }
     }
 
-    /**
-     * Guardar un producto individual sin duplicados
-     */
     public void save(Product p) {
         Transaction tx = null;
 
@@ -83,7 +75,7 @@ public class ProductRepository {
             Product existing = q.uniqueResult();
 
             if (existing == null) {
-                session.save(p);
+                session.persist(p); // ← CAMBIO CRÍTICO
             } else {
                 existing.setCategoria(p.getCategoria());
                 existing.setPrice(p.getPrice());

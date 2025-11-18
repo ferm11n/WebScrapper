@@ -1,7 +1,9 @@
 package scraper.config;
 
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import scraper.domain.model.Product;
 
 public class HibernateUtil {
@@ -10,11 +12,19 @@ public class HibernateUtil {
 
     private static SessionFactory buildSessionFactory() {
         try {
-            return new Configuration()
+
+            // Carga hibernate.cfg.xml desde src/main/resources
+            StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
                     .configure("hibernate.cfg.xml")
-                    .addAnnotatedClass(Product.class)
-                    .buildSessionFactory();
-        } catch (Throwable ex) {
+                    .build();
+
+            MetadataSources sources = new MetadataSources(registry)
+                    .addAnnotatedClass(Product.class);
+
+            return sources.buildMetadata().buildSessionFactory();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
             throw new ExceptionInInitializerError(ex);
         }
     }
