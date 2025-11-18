@@ -30,9 +30,12 @@ public class ProductRepository {
             );
             List<Object[]> rows = q.list();
 
-            Map<String, Integer> existentes = new HashMap<>();
+            // Cambiado a Long porque Product.id es Long
+            Map<String, Long> existentes = new HashMap<>();
             for (Object[] row : rows) {
-                existentes.put((String) row[1], (Integer) row[0]);
+                Long id = (Long) row[0];
+                String url = (String) row[1];
+                existentes.put(url, id);
             }
 
             for (Product p : products) {
@@ -42,11 +45,13 @@ public class ProductRepository {
                     session.save(p);
                 } else {
                     // Ya existe → actualizar
-                    Product existing = session.get(Product.class, existentes.get(p.getUrl()));
+                    Long existingId = existentes.get(p.getUrl());
+                    Product existing = session.get(Product.class, existingId);
 
                     existing.setCategoria(p.getCategoria());
                     existing.setPrice(p.getPrice());
                     existing.setSupermercado(p.getSupermercado());
+                    existing.setTitle(p.getTitle());
 
                     session.merge(existing);
                 }
@@ -83,6 +88,7 @@ public class ProductRepository {
                 existing.setCategoria(p.getCategoria());
                 existing.setPrice(p.getPrice());
                 existing.setSupermercado(p.getSupermercado());
+                existing.setTitle(p.getTitle());
                 session.merge(existing);
             }
 
